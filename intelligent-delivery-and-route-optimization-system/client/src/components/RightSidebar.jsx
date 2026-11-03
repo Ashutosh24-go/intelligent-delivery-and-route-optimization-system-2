@@ -231,7 +231,7 @@ export default function RightSidebar({
               {batches.map((batch, idx) => {
                 const isThisEditing = isEditingBatch && idx === activeBatchIndex;
                 const isThisExpanded = !isEditingBatch && idx === expandedPlacedIndex;
-                const isThisPlaced = batch.status === 'placed' || batch.status === 'delivered';
+                const isThisPlaced = batch.status === 'placed';
 
                 // If this batch is placed and NOT expanded, display collapsed single field
                 if (isThisPlaced && !isThisExpanded) {
@@ -274,7 +274,7 @@ export default function RightSidebar({
                       >
                         <div className="header-left">
                           <span className="batch-number-badge active">Batch #{batch.id}</span>
-                          <span className="batch-status-tag">{batch.status === 'delivered' ? 'Delivered' : 'Placed'}</span>
+                          <span className="batch-status-tag">Placed</span>
                         </div>
                         <FiChevronUp className="expand-chevron" />
                       </div>
@@ -384,21 +384,13 @@ export default function RightSidebar({
                           )}
 
                           {/* Finish Batch delivery button */}
-                          {batch.status !== 'delivered' && (
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-block btn-finish"
-                              onClick={onFinishBatch}
-                            >
-                              <FiClock /> Finish Batch Delivery
-                            </button>
-                          )}
-
-                          {batch.status === 'delivered' && (
-                            <div className="delivered-badge-banner">
-                              <FiCheckCircle /> Batch Delivery Finished
-                            </div>
-                          )}
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-block btn-finish"
+                            onClick={onFinishBatch}
+                          >
+                            <FiClock /> Finish Batch Delivery
+                          </button>
 
                           {/* Light green button: Add more batches */}
                           <button
@@ -546,18 +538,18 @@ export default function RightSidebar({
                 return null;
               })}
 
-              {/* If no batches exist or all are collapsed and user wants to add more */}
+              {/* If no batches exist, prompt to add more batches */}
               {batches.length === 0 && (
                 <div className="empty-prompt">
                   <FiLayers className="empty-icon" />
-                  <p>No batches active. Click below to start entering orders.</p>
+                  <p>No active delivery batches. Click below to add a new batch.</p>
                   <button
                     type="button"
-                    className="btn btn-primary btn-block"
+                    className="btn btn-add-more-batches btn-block btn-lg"
                     onClick={onEnsureBatch}
                     style={{ marginTop: 12 }}
                   >
-                    <FiPlus /> Start Batch #1
+                    <FiPlus /> Add more batches
                   </button>
                 </div>
               )}

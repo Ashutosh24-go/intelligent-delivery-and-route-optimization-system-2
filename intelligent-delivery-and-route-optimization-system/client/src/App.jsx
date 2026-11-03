@@ -53,9 +53,9 @@ export default function App() {
       const historyData = await api.getBatches();
       setAllBatchHistory(historyData || []);
 
-      // Restore placed/delivered batches so page refreshes don't lose batch state
+      // Restore only active 'placed' batches (finished 'delivered' batches are kept in history only)
       const restoredBatches = (historyData || [])
-        .filter(b => b.status === 'placed' || b.status === 'delivered')
+        .filter(b => b.status === 'placed')
         .sort((a, b) => (parseInt(a.id, 10) || 0) - (parseInt(b.id, 10) || 0))
         .map(b => ({
           id: b.id,
@@ -107,15 +107,15 @@ export default function App() {
   // Determine which routeData & orders to show in active view on map
   const visibleRouteData = isEditingBatch
     ? null
-    : (expandedBatch ? expandedBatch.routeData : null);
+    : (expandedBatch && expandedBatch.status === 'placed' ? expandedBatch.routeData : null);
   const visibleOrders = isEditingBatch
     ? (currentBatch ? currentBatch.orders : [])
-    : (expandedBatch ? expandedBatch.orders : []);
+    : (expandedBatch && expandedBatch.status === 'placed' ? expandedBatch.orders : []);
 
   // Background routes (Requirement 4 & 5: other batches' polylines shown in dark blue)
   const backgroundRoutes = batches
     .filter((b, idx) => {
-      if (b.status !== 'placed' && b.status !== 'delivered') return false;
+      if (b.status !== 'placed') return false;
       if (isEditingBatch) return true; // all placed batches are background when editing
       if (expandedPlacedIndex >= 0) return idx !== expandedPlacedIndex;
       return true;
@@ -143,8 +143,10 @@ export default function App() {
         setExpandedPlacedIndex(-1);
         return prev;
       }
-      // Compute next sequential ID from existing batches
-      const maxId = prev.reduce((max, b) => Math.max(max, parseInt(b.id, 10) || 0), 0);
+      // Compute next sequential ID from existing batches AND history
+      const historyMax = (allBatchHistory || []).reduce((max, b) => Math.max(max, parseInt(b.id, 10) || 0), 0);
+      const prevMax = prev.reduce((max, b) => Math.max(max, parseInt(b.id, 10) || 0), 0);
+      const maxId = Math.max(historyMax, prevMax);
       const newId = maxId + 1;
       const newBatch = {
         id: newId,
@@ -428,7 +430,7 @@ export default function App() {
     }
   };
 
-  // Finish batch delivery (Requirement 5)
+  // Finish batch delivery
   const handleFinishBatch = async () => {
     const idx = expandedPlacedIndex >= 0 ? expandedPlacedIndex : -1;
     if (idx < 0 || idx >= batches.length) return;
@@ -437,8 +439,43 @@ export default function App() {
 
     try {
       await api.finishBatchDelivery(batch.serverBatchId);
-      updateBatchAt(idx, { status: 'delivered' });
       await loadBatchHistory();
+
+      // Remove the finished batch from active batches in Orders section so its route disappears from map
+      // and its field disappears from the Delivery batches sidebar
+      setBatches(prev => {
+        const remaining = prev.filter((_, i) => i !== idx);
+
+        // Find remaining placed batches
+        const remainingPlaced = [];
+        remaining.forEach((b, i) => {
+          if (b.status === 'placed') remainingPlaced.push(i);
+        });
+
+        if (activeBatchIndex >= 0) {
+          // If an editing batch was active, adjust its index
+          const newEditingIdx = remaining.findIndex(b => b.status === 'editing');
+          setActiveBatchIndex(newEditingIdx);
+          setExpandedPlacedIndex(-1);
+        } else if (remainingPlaced.length > 0) {
+          // Expand the latest remaining placed batch
+          const lastPlacedIdx = remainingPlaced[remainingPlaced.length - 1];
+          setExpandedPlacedIndex(lastPlacedIdx);
+          if (remaining[lastPlacedIdx].routeData?.tour?.[0]) {
+            const firstOrder = remaining[lastPlacedIdx].routeData.tour[0];
+            const details = remaining[lastPlacedIdx].routeData.orderDetails?.[firstOrder.id];
+            setSelectedOrderDelivery(details || null);
+          }
+        } else {
+          setExpandedPlacedIndex(-1);
+          setSelectedOrderDelivery(null);
+        }
+
+        return remaining;
+      });
+
+      setSelectedOrderDelivery(null);
+      setSelectedLocation(null);
     } catch (err) {
       console.error('Error finishing batch:', err);
     }
@@ -488,8 +525,9 @@ export default function App() {
     setSelectedOrderDelivery(null);
 
     const placedBatches = batches.filter(b => b.status !== 'editing');
-    const maxId = placedBatches.reduce((max, b) => Math.max(max, parseInt(b.id, 10) || 0), 0);
-    const newId = maxId + 1;
+    const historyMax = (allBatchHistory || []).reduce((max, b) => Math.max(max, parseInt(b.id, 10) || 0), 0);
+    const currentMax = placedBatches.reduce((max, b) => Math.max(max, parseInt(b.id, 10) || 0), 0);
+    const newId = Math.max(historyMax, currentMax) + 1;
 
     const reOrders = (historyBatch.orders || []).map((o, idx) => ({
       ...o,
@@ -550,7 +588,7 @@ export default function App() {
       <div className="main-content-area" style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
         {/* Requirement 7: On clicking Order History, map disappears and last added batch is displayed at top with white background */}
         {activeTab === 'order_history' && (
-          <div className="history-full-view">
+          <div className="history-full-view" style={{ flex: 1, width: '100%', height: '100%', overflowY: 'auto', backgroundColor: '#ffffff' }}>
             <OrderHistory
               batches={allBatchHistory}
               warehouses={warehouses}
