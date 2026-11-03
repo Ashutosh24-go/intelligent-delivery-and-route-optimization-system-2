@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Warehouse 1",
+    "lat": 28.66546981981308,
+    "lng": 77.26445850062038,
+    "address": "Point (28.6655, 77.2645)",
+    "city": "Delhi",
+    "createdAt": "2026-10-28T19:01:13.646Z"
+  },
+  {
+    "id": 2,
+    "name": "Warehouse 2",
+    "lat": 28.6566286508453,
+    "lng": 77.22477959186254,
+    "address": "Chandni Chowk,  Dharampura,  Sadar Bazar",
+    "city": "Delhi",
+    "createdAt": "2026-10-28T19:01:25.882Z"
+  },
+  {
+    "id": 3,
+    "name": "Warehouse 3",
+    "lat": 28.665135567905974,
+    "lng": 77.22213621891267,
+    "address": "Nicholson Road,  Kashmere Gate,  Sadar Bazar",
+    "city": "Delhi",
+    "createdAt": "2026-10-28T19:01:41.399Z"
+  },
+  {
+    "id": 4,
+    "name": "Warehouse 4",
+    "lat": 28.657907137791774,
+    "lng": 77.28472613256535,
+    "address": "Point (28.6579, 77.2847)",
+    "city": "Delhi",
+    "createdAt": "2026-10-28T19:01:48.648Z"
+  }
+]

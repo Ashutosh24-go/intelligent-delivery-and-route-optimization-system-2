@@ -1,0 +1,30 @@
+{
+  "name": "leaflet-order-manager",
+  "version": "1.0.0",
+  "description": "A simple Leaflet based order manager with route optimisation",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "client": "cd client && npm run dev",
+    "server": "node server/index.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "cd client && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "leaflet": "^1.9.4",
+    "axios": "^1.7.2"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^8.2.2",
+    "react-icons": "^5.2.0"
+  }
+}
