@@ -31,7 +31,7 @@
 
 ## 🌟 What is IDROS?
 
-Most traditional GPS and route planning tools (like the classic Traveling Salesperson Problem or Google Maps directions) optimize for **one thing only: the shortest distance**.
+Most traditional GPS and route planning tools (like the classic Traveling Salesperson Problem or Google Maps directions) optimize for **one thing only: the shortest distance** . 
 
 However, real-world delivery logistics doesn't work that way:
 - Delivering a critical medical package or an urgent hot meal **15 minutes earlier** is often far more valuable to a customer than saving 500 meters of fuel.
